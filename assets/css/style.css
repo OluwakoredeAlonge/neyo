@@ -1,0 +1,159 @@
+/* ============================================================
+   Neyo's Kitchen — Custom Styles
+   ============================================================ */
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #f5f5f4; }
+::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #f97316; }
+
+/* Smooth scroll */
+html { scroll-behavior: smooth; }
+
+/* Prevent body scroll when drawer/modal is open */
+body.overflow-hidden { overflow: hidden; }
+
+/* Font base */
+body { font-family: 'DM Sans', system-ui, sans-serif; }
+
+/* ---- Animations ---- */
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+@keyframes slideInUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.4); }
+  50%       { box-shadow: 0 0 0 12px rgba(249, 115, 22, 0); }
+}
+@keyframes ticker {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-slide-in-right { animation: slideInRight 0.32s cubic-bezier(.22,.68,0,1.2) both; }
+.animate-slide-in-up    { animation: slideInUp 0.32s cubic-bezier(.22,.68,0,1.2) both; }
+.animate-fade-in        { animation: fadeIn 0.2s ease both; }
+.pulse-glow             { animation: pulseGlow 2s ease-in-out infinite; }
+
+/* ---- Flash Sale Glow ---- */
+.flash-sale-card {
+  position: relative;
+  overflow: hidden;
+}
+.flash-sale-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.12) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* ---- Hero dot pattern ---- */
+.hero-dots {
+  background-image: radial-gradient(rgba(249,115,22,.35) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* ---- Category pill active ---- */
+.cat-pill-active {
+  background: #f97316;
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(249,115,22,.35);
+}
+
+/* ---- Card hover lift ---- */
+.card-lift {
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+.card-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(0,0,0,.10);
+}
+
+/* ---- Toggle switch ---- */
+.toggle-switch { position: relative; display: inline-block; width: 40px; height: 22px; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; inset: 0;
+  background: #d6d3d1; border-radius: 999px;
+  transition: background .25s;
+  cursor: pointer;
+}
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 16px; height: 16px;
+  left: 3px; top: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: transform .25s;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+.toggle-switch input:checked + .toggle-slider { background: #f97316; }
+.toggle-switch input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+/* ---- Status badges ---- */
+.badge-pending    { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; }
+.badge-processing { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+.badge-dispatched { background: #e0f2fe; color: #075985; border: 1px solid #7dd3fc; }
+.badge-delivered  { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+.badge-cancelled  { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+/* ---- Sidebar nav item ---- */
+.nav-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px; border-radius: 12px;
+  font-size: 0.875rem; font-weight: 500;
+  color: #78716c; cursor: pointer;
+  transition: background .18s, color .18s;
+  white-space: nowrap;
+}
+.nav-item:hover   { background: #fff7ed; color: #f97316; }
+.nav-item.active  { background: #f97316; color: #fff; }
+.nav-item.active svg { stroke: #fff; }
+
+/* ---- Upload area ---- */
+.upload-area {
+  border: 2px dashed #d6d3d1;
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+}
+.upload-area:hover { border-color: #f97316; background: #fff7ed; }
+
+/* ---- Table row hover ---- */
+.table-row { transition: background .15s; }
+.table-row:hover { background: #fff7ed; }
+
+/* ---- Skeleton loader ---- */
+.skeleton {
+  background: linear-gradient(90deg, #f5f5f4 25%, #e7e5e4 50%, #f5f5f4 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s ease infinite;
+  border-radius: 8px;
+}
+@keyframes skeleton-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ---- Image preview in admin ---- */
+.img-preview { object-fit: cover; border-radius: 12px; width: 100%; height: 160px; }
+
+/* ---- Notification dot ---- */
+.notif-dot {
+  position: absolute; top: -2px; right: -2px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #ef4444; border: 2px solid white;
+}

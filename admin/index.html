@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard — Neyo's Kitchen</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Alpine.js -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@0.441.0/dist/umd/lucide.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['"Playfair Display"', 'Georgia', 'serif'],
+            body:    ['"DM Sans"', 'system-ui', 'sans-serif'],
+          },
+          borderRadius: { '3xl': '1.5rem', '4xl': '2rem' }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="../assets/css/style.css" />
+</head>
+
+<body class="font-body bg-stone-50 antialiased" x-data="adminApp()" x-init="init()">
+
+  <!-- ================================================================
+       TOAST
+       ================================================================ -->
+  <div x-show="toast.show"
+       x-transition:enter="transition ease-out duration-300"
+       x-transition:enter-start="opacity-0 translate-y-4"
+       x-transition:enter-end="opacity-100 translate-y-0"
+       x-transition:leave="transition ease-in duration-200"
+       x-transition:leave-start="opacity-100 translate-y-0"
+       x-transition:leave-end="opacity-0 translate-y-4"
+       :class="toast.type === 'error' ? 'bg-red-600' : 'bg-stone-900'"
+       class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[300] flex items-center gap-3 text-white px-5 py-3 rounded-full shadow-2xl text-sm font-medium pointer-events-none"
+       style="display:none;">
+    <svg x-show="toast.type !== 'error'" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    <svg x-show="toast.type === 'error'" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fca5a5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span x-text="toast.message"></span>
+  </div>
+
+  <!-- ================================================================
+       DELETE CONFIRM DIALOG
+       ================================================================ -->
+  <div x-show="confirmDialog.open"
+       x-transition:enter="transition ease-out duration-150"
+       x-transition:enter-start="opacity-0"
+       x-transition:enter-end="opacity-100"
+       class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center p-4"
+       style="display:none;">
+    <div @click.stop class="bg-white rounded-3xl shadow-2xl p-6 w-full max-w-sm">
+      <div class="flex items-center gap-4 mb-4">
+        <div class="w-12 h-12 bg-red-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+          <i data-lucide="trash-2" class="w-5 h-5 text-red-500"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-stone-800">Confirm Delete</h3>
+          <p class="text-stone-500 text-sm" x-text="confirmDialog.message"></p>
+        </div>
+      </div>
+      <div class="flex gap-3">
+        <button @click="confirmDialog.open = false" class="flex-1 border-2 border-stone-200 hover:bg-stone-50 text-stone-700 py-2.5 rounded-2xl font-semibold text-sm transition-colors">Cancel</button>
+        <button @click="confirmDialog.onConfirm(); confirmDialog.open = false" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2.5 rounded-2xl font-semibold text-sm transition-colors">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================
+       LAYOUT
+       ================================================================ -->
+  <div class="flex h-screen overflow-hidden">
+
+    <!-- ---- SIDEBAR ---- -->
+    <aside :class="sidebarOpen ? 'w-64' : 'w-16'"
+           class="bg-white border-r border-stone-100 flex flex-col transition-all duration-300 shadow-sm flex-shrink-0 z-20">
+
+      <!-- Logo -->
+      <div class="flex items-center gap-3 px-4 py-5 border-b border-stone-100">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-400 to-orange-700 flex items-center justify-center flex-shrink-0 shadow">
+          <i data-lucide="utensils" class="w-4 h-4 text-white"></i>
+        </div>
+        <div x-show="sidebarOpen" class="overflow-hidden">
+          <div class="font-display font-bold text-base text-stone-900 leading-tight whitespace-nowrap">Neyo's Kitchen</div>
+          <div class="text-[10px] font-semibold text-orange-500 uppercase tracking-widest whitespace-nowrap">Admin Panel</div>
+        </div>
+      </div>
+
+      <!-- Nav Items -->
+      <nav class="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
+        <button @click="activePage = 'dashboard'"
+                :class="activePage === 'dashboard' ? 'active' : ''"
+                class="nav-item w-full text-left">
+          <i data-lucide="layout-dashboard" class="w-5 h-5 flex-shrink-0"></i>
+          <span x-show="sidebarOpen" class="whitespace-nowrap">Dashboard</span>
+        </button>
+        <button @click="activePage = 'menu'"
+                :class="activePage === 'menu' ? 'active' : ''"
+                class="nav-item w-full text-left">
+          <i data-lucide="utensils" class="w-5 h-5 flex-shrink-0"></i>
+          <span x-show="sidebarOpen" class="whitespace-nowrap">Menu Items</span>
+        </button>
+        <button @click="activePage = 'flash'"
+                :class="activePage === 'flash' ? 'active' : ''"
+                class="nav-item w-full text-left">
+          <i data-lucide="zap" class="w-5 h-5 flex-shrink-0"></i>
+          <span x-show="sidebarOpen" class="whitespace-nowrap">Flash Sales</span>
+        </button>
+        <button @click="activePage = 'combos'"
+                :class="activePage === 'combos' ? 'active' : ''"
+                class="nav-item w-full text-left">
+          <i data-lucide="package" class="w-5 h-5 flex-shrink-0"></i>
+          <span x-show="sidebarOpen" class="whitespace-nowrap">Combo Deals</span>
+        </button>
+        <button @click="activePage = 'orders'"
+                :class="activePage === 'orders' ? 'active' : ''"
+                class="nav-item w-full text-left">
+          <div class="relative flex-shrink-0">
+            <i data-lucide="clipboard-list" class="w-5 h-5"></i>
+            <span x-show="pendingOrdersCount > 0"
+                  class="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center"
+                  x-text="pendingOrdersCount"></span>
+          </div>
+          <span x-show="sidebarOpen" class="whitespace-nowrap">Orders</span>
+        </button>
+
+        <div class="my-2 border-t border-stone-100"></div>
+
+        <button @click="activePage = 'settings'"
+                :class="activePage === 'settings' ? 'active' : ''"
+                class="nav-item w-full text-left">
+          <i data-lucide="settings" class="w-5 h-5 flex-shrink-0"></i>
+          <span x-show="sidebarOpen" class="whitespace-nowrap">Settings</span>
+        </button>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div class="border-t border-stone-100 p-3">
+        <a href="../index.html"
+           class="nav-item block text-left w-full">
+          <i data-lucide="external-link" class="w-5 h-5 flex-shrink-0"></i>
+          <span x-show="sidebarOpen" class="whitespace-nowrap">View Site</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- ---- MAIN CONTENT ---- -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+      <!-- Top Bar -->
+      <header class="bg-white border-b border-stone-100 px-6 py-4 flex items-center justify-between flex-shrink-0 shadow-sm">
+        <div class="flex items-center gap-4">
+          <!-- Sidebar toggle -->
+          <button @click="sidebarOpen = !sidebarOpen"
+                  class="p-2 rounded-xl hover:bg-stone-100 transition-colors text-stone-500">
+            <i data-lucide="panel-left" class="w-5 h-5"></i>
+          </button>
+          <!-- Breadcrumb -->
+          <div>
+            <h1 class="font-bold text-stone-800 text-base capitalize" x-text="pageTitle"></h1>
+            <p class="text-stone-400 text-xs" x-text="pageSubtitle"></p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <!-- Notifications -->
+          <div class="relative">
+            <button class="p-2 rounded-xl hover:bg-stone-100 transition-colors text-stone-500 relative">
+              <i data-lucide="bell" class="w-5 h-5"></i>
+              <span class="notif-dot"></span>
+            </button>
+          </div>
+          <!-- Admin avatar -->
+          <div class="flex items-center gap-3 pl-3 border-l border-stone-100">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-400 to-orange-700 flex items-center justify-center shadow-sm">
+              <span class="text-white font-bold text-sm">NK</span>
+            </div>
+            <div class="hidden sm:block">
+              <div class="font-semibold text-stone-800 text-sm">Neyo's Kitchen</div>
+              <div class="text-stone-400 text-xs">Administrator</div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Page Content -->
+      <main class="flex-1 overflow-y-auto bg-stone-50">
+
+        <!-- ============================================================
+             DASHBOARD PAGE
+             ============================================================ -->
+        <div x-show="activePage === 'dashboard'" class="p-6 space-y-6">
+
+          <!-- Stats Cards -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white rounded-3xl p-5 border border-stone-100 shadow-sm card-lift">
+              <div class="flex items-center justify-between mb-4">
+                <div class="w-10 h-10 bg-orange-100 rounded-2xl flex items-center justify-center">
+                  <i data-lucide="shopping-bag" class="w-5 h-5 text-orange-500"></i>
+                </div>
+                <span class="text-xs font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">+12%</span>
+              </div>
+              <div class="font-extrabold text-2xl text-stone-900">24</div>
+              <div class="text-stone-400 text-sm mt-0.5">Orders Today</div>
+            </div>
+            <div class="bg-white rounded-3xl p-5 border border-stone-100 shadow-sm card-lift">
+              <div class="flex items-center justify-between mb-4">
+                <div class="w-10 h-10 bg-green-100 rounded-2xl flex items-center justify-center">
+                  <i data-lucide="trending-up" class="w-5 h-5 text-green-500"></i>
+                </div>
+                <span class="text-xs font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">+8%</span>
+              </div>
+              <div class="font-extrabold text-2xl text-stone-900">₦48.5k</div>
+              <div class="text-stone-400 text-sm mt-0.5">Revenue Today</div>
+            </div>
+            <div class="bg-white rounded-3xl p-5 border border-stone-100 shadow-sm card-lift">
+              <div class="flex items-center justify-between mb-4">
+                <div class="w-10 h-10 bg-blue-100 rounded-2xl flex items-center justify-center">
+                  <i data-lucide="utensils" class="w-5 h-5 text-blue-500"></i>
+                </div>
+                <span class="text-xs font-semibold text-stone-500 bg-stone-100 px-2 py-0.5 rounded-full" x-text="`${menuItems.length} total`"></span>
+              </div>
+              <div class="font-extrabold text-2xl text-stone-900" x-text="menuItems.filter(i=>i.available).length"></div>
+              <div class="text-stone-400 text-sm mt-0.5">Available Items</div>
+            </div>
+            <div class="bg-white rounded-3xl p-5 border border-stone-100 shadow-sm card-lift">
+              <div class="flex items-center justify-between mb-4">
+                <div class="w-10 h-10 bg-red-100 rounded-2xl flex items-center justify-center">
+                  <i data-lucide="clock" class="w-5 h-5 text-red-500"></i>
+                </div>
+                <span class="text-xs font-semibold text-red-600 bg-red-50 px-2 py-0.5 rounded-full pulse-glow">Live</span>
+              </div>
+              <div class="font-extrabold text-2xl text-stone-900" x-text="pendingOrdersCount"></div>
+              <div class="text-stone-400 text-sm mt-0.5">Pending Orders</div>
+            </div>
+          </div>
+
+          <div class="grid lg:grid-cols-3 gap-6">
+            <!-- Recent Orders -->
+            <div class="lg:col-span-2 bg-white rounded-3xl border border-stone-100 shadow-sm overflow-hidden">
+              <div class="flex items-center justify-between px-6 py-4 border-b border-stone-100">
+                <h2 class="font-bold text-stone-800">Recent Orders</h2>
+                <button @click="activePage = 'orders'" class="text-orange-500 hover:text-orange-600 text-sm font-semibold transition-colors">View All →</button>
+              </div>
+              <div class="divide-y divide-stone-50">
+                <template x-for="order in orders.slice(0,5)" :key="order.id">
+                  <div class="flex items-center gap-4 px-6 py-3.5 table-row">
+                    <div class="w-9 h-9 rounded-xl bg-orange-50 flex items-center justify-center flex-shrink-0">
+                      <i data-lucide="package" class="w-4 h-4 text-orange-500"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <div class="font-semibold text-stone-800 text-sm truncate" x-text="order.customer"></div>
+                      <div class="text-stone-400 text-xs truncate" x-text="order.items.join(', ')"></div>
+                    </div>
+                    <div class="text-right flex-shrink-0">
+                      <div class="font-bold text-stone-800 text-sm" x-text="'₦' + order.total.toLocaleString()"></div>
+                      <span :class="{
+                        'badge-pending':    order.status === 'pending',
+                        'badge-processing': order.status === 'processing',
+                        'badge-dispatched': order.status === 'dispatched',
+                        'badge-delivered':  order.status === 'delivered',
+                        'badge-cancelled':  order.status === 'cancelled'
+                      }" class="text-[10px] font-bold px-2 py-0.5 rounded-full capitalize" x-text="order.status"></span>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </div>
+
+            <!-- Quick Actions + Active Flash Sales -->
+            <div class="space-y-5">
+              <div class="bg-white rounded-3xl border border-stone-100 shadow-sm p-5">
+                <h2 class="font-bold text-stone-800 mb-4">Quick Actions</h2>
+                <div class="space-y-2">
+                  <button @click="activePage = 'menu'; openAddItemModal()"
+                          class="w-full flex items-center gap-3 px-4 py-3 bg-orange-50 hover:bg-orange-100 text-orange-700 rounded-2xl text-sm font-semibold transition-colors">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i> Add Menu Item
+                  </button>
+                  <button @click="activePage = 'flash'; openAddFlashModal()"
+                          class="w-full flex items-center gap-3 px-4 py-3 bg-red-50 hover:bg-red-100 text-red-700 rounded-2xl text-sm font-semibold transition-colors">
+                    <i data-lucide="zap" class="w-4 h-4"></i> New Flash Sale
+                  </button>
+                  <button @click="activePage = 'combos'; openAddComboModal()"
+                          class="w-full flex items-center gap-3 px-4 py-3 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-2xl text-sm font-semibold transition-colors">
+                    <i data-lucide="package-plus" class="w-4 h-4"></i> New Combo Deal
+                  </button>
+                </div>
+              </div>
+
+              <!-- Active Flash Sales -->
+              <div class="bg-gradient-to-br from-red-500 to-orange-500 rounded-3xl p-5 text-white">
+                <div class="flex items-center gap-2 mb-3">
+                  <i data-lucide="zap" class="w-4 h-4"></i>
+                  <h2 class="font-bold text-sm">Active Flash Sales</h2>
+                </div>
+                <div class="space-y-2">
+                  <template x-for="sale in flashSales.filter(s=>s.active)" :key="sale.id">
+                    <div class="bg-white/20 backdrop-blur rounded-xl px-3 py-2 flex justify-between items-center">
+                      <span class="text-sm font-medium truncate flex-1" x-text="sale.name"></span>
+                      <span class="font-mono text-xs font-bold bg-black/20 px-2 py-0.5 rounded-lg ml-2 flex-shrink-0" x-text="`${sale.countdown.h}:${sale.countdown.m}:${sale.countdown.s}`"></span>
+                    </div>
+                  </template>
+                  <div x-show="flashSales.filter(s=>s.active).length === 0" class="text-white/70 text-sm text-center py-2">No active flash sales</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================================
+             MENU ITEMS PAGE
+             ============================================================ -->
+        <div x-show="activePage === 'menu'" class="p-6 space-y-5" style="display:none;">
+          <!-- Toolbar -->
+          <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+            <div class="flex items-center gap-3 flex-1 w-full sm:w-auto">
+              <!-- Search -->
+              <div class="relative flex-1 sm:max-w-xs">
+                <i data-lucide="search" class="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+                <input x-model="menuSearch" type="text" placeholder="Search menu items..."
+                       class="w-full pl-10 pr-4 py-2.5 border border-stone-200 rounded-2xl text-sm outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 bg-white transition-all" />
+              </div>
+              <!-- Category filter -->
+              <select x-model="menuFilterCat"
+                      class="border border-stone-200 rounded-2xl px-4 py-2.5 text-sm outline-none focus:border-orange-400 bg-white text-stone-600 transition-all">
+                <option value="all">All Categories</option>
+                <option value="rice">Rice</option>
+                <option value="soups">Soups</option>
+                <option value="grills">Grills</option>
+                <option value="snacks">Snacks</option>
+                <option value="drinks">Drinks</option>
+              </select>
+            </div>
+            <button @click="openAddItemModal()"
+                    class="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-2xl font-semibold text-sm transition-all shadow-md shadow-orange-100 active:scale-95 flex-shrink-0">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              Add Item
+            </button>
+          </div>
+
+          <!-- Stats row -->
+          <div class="flex gap-3 flex-wrap text-sm">
+            <span class="bg-white border border-stone-100 px-3 py-1.5 rounded-full text-stone-500 shadow-sm">
+              <span class="font-bold text-stone-800" x-text="filteredMenuItems.length"></span> items shown
+            </span>
+            <span class="bg-green-50 border border-green-100 px-3 py-1.5 rounded-full text-green-600 shadow-sm">
+              <span class="font-bold" x-text="menuItems.filter(i=>i.available).length"></span> available
+            </span>
+            <span class="bg-red-50 border border-red-100 px-3 py-1.5 rounded-full text-red-500 shadow-sm">
+              <span class="font-bold" x-text="menuItems.filter(i=>!i.available).length"></span> sold out
+            </span>
+          </div>
+
+          <!-- Table -->
+          <div class="bg-white rounded-3xl border border-stone-100 shadow-sm overflow-hidden">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-stone-100 bg-stone-50">
+                  <th class="px-5 py-3.5 text-left font-semibold text-stone-500 text-xs uppercase tracking-wide">Item</th>
+                  <th class="px-4 py-3.5 text-left font-semibold text-stone-500 text-xs uppercase tracking-wide hidden md:table-cell">Category</th>
+                  <th class="px-4 py-3.5 text-left font-semibold text-stone-500 text-xs uppercase tracking-wide">Price</th>
+                  <th class="px-4 py-3.5 text-center font-semibold text-stone-500 text-xs uppercase tracking-wide">Status</th>
+                  <th class="px-4 py-3.5 text-right font-semibold text-stone-500 text-xs uppercase tracking-wide">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <template x-for="item in filteredMenuItems" :key="item.id">
+                  <tr class="border-b border-stone-50 last:border-0 table-row">
+                    <td class="px-5 py-3">
+                      <div class="flex items-center gap-3">
+                        <img :src="item.image" :alt="item.name" class="w-11 h-11 rounded-xl object-cover flex-shrink-0 shadow-sm" />
+                        <div>
+                          <div class="font-semibold text-stone-800" x-text="item.name"></div>
+                          <div class="text-stone-400 text-xs truncate max-w-[180px]" x-text="item.description"></div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-4 py-3 hidden md:table-cell">
+                      <span class="capitalize bg-stone-100 text-stone-600 px-2.5 py-1 rounded-full text-xs font-medium" x-text="item.category"></span>
+                    </td>
+                    <td class="px-4 py-3 font-bold text-stone-800" x-text="'₦' + item.price.toLocaleString()"></td>
+                    <td class="px-4 py-3 text-center">
+                      <label class="toggle-switch">
+                        <input type="checkbox" :checked="item.available" @change="toggleAvailability(item.id)" />
+                        <span class="toggle-slider"></span>
+                      </label>
+                    </td>
+                    <td class="px-4 py-3">
+                      <div class="flex items-center justify-end gap-1">
+                        <button @click="openEditItemModal(item)"
+                                class="p-2 rounded-xl hover:bg-orange-50 text-stone-400 hover:text-orange-500 transition-colors">
+                          <i data-lucide="pencil" class="w-4 h-4"></i>
+                        </button>
+                        <button @click="askDelete('Are you sure you want to delete this menu item?', () => deleteMenuItem(item.id))"
+                                class="p-2 rounded-xl hover:bg-red-50 text-stone-400 hover:text-red-500 transition-colors">
+                          <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </template>
+                <tr x-show="filteredMenuItems.length === 0">
+                  <td colspan="5" class="px-6 py-12 text-center text-stone-400">No items match your search.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ============================================================
+             FLASH SALES PAGE
+             ============================================================ -->
+        <div x-show="activePage === 'flash'" class="p-6 space-y-5" style="display:none;">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="font-bold text-stone-800">Flash Sales</h2>
+              <p class="text-stone-400 text-sm">Create limited-time discounts to boost orders</p>
+            </div>
+            <button @click="openAddFlashModal()"
+                    class="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-2xl font-semibold text-sm transition-all shadow-md shadow-orange-100 active:scale-95">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              New Flash Sale
+            </button>
+          </div>
+
+          <!-- Active Sales -->
+          <div>
+            <h3 class="font-semibold text-stone-600 text-xs uppercase tracking-widest mb-3">Active</h3>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <template x-for="sale in flashSales.filter(s=>s.active)" :key="sale.id">
+                <div class="bg-white rounded-3xl border border-stone-100 shadow-sm overflow-hidden card-lift">
+                  <div class="relative">
+                    <img :src="sale.image" :alt="sale.name" class="w-full h-40 object-cover" />
+                    <div class="absolute top-3 left-3 bg-red-500 text-white text-xs font-extrabold px-2.5 py-1 rounded-full">
+                      <span x-text="`-${sale.discount}%`"></span>
+                    </div>
+                    <div class="absolute top-3 right-3 bg-black/60 text-white text-xs font-mono px-2.5 py-1 rounded-xl">
+                      <span x-text="`${sale.countdown.h}:${sale.countdown.m}:${sale.countdown.s}`"></span>
+                    </div>
+                  </div>
+                  <div class="p-4">
+                    <h3 class="font-semibold text-stone-800 mb-1" x-text="sale.name"></h3>
+                    <div class="flex items-center gap-2 mb-3">
+                      <span class="font-bold text-orange-500" x-text="'₦' + sale.salePrice.toLocaleString()"></span>
+                      <span class="text-stone-300 text-sm line-through" x-text="'₦' + sale.originalPrice.toLocaleString()"></span>
+                    </div>
+                    <button @click="askDelete('End this flash sale?', () => endFlashSale(sale.id))"
+                            class="w-full flex items-center justify-center gap-2 border border-red-200 text-red-500 hover:bg-red-50 py-2 rounded-xl text-sm font-semibold transition-colors">
+                      <i data-lucide="x-circle" class="w-4 h-4"></i> End Sale
+                    </button>
+                  </div>
+                </div>
+              </template>
+              <div x-show="flashSales.filter(s=>s.active).length === 0"
+                   class="col-span-full bg-white rounded-3xl border border-dashed border-stone-200 p-10 text-center">
+                <i data-lucide="zap-off" class="w-10 h-10 text-stone-200 mx-auto mb-3"></i>
+                <p class="text-stone-400 font-medium text-sm">No active flash sales</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Expired -->
+          <div x-show="flashSales.filter(s=>!s.active).length > 0">
+            <h3 class="font-semibold text-stone-600 text-xs uppercase tracking-widest mb-3">Expired / Ended</h3>
+            <div class="bg-white rounded-3xl border border-stone-100 shadow-sm overflow-hidden">
+              <template x-for="sale in flashSales.filter(s=>!s.active)" :key="sale.id">
+                <div class="flex items-center gap-4 px-5 py-3.5 border-b border-stone-50 last:border-0 opacity-60">
+                  <img :src="sale.image" :alt="sale.name" class="w-11 h-11 rounded-xl object-cover flex-shrink-0" />
+                  <div class="flex-1">
+                    <div class="font-semibold text-stone-700 text-sm" x-text="sale.name"></div>
+                    <div class="text-stone-400 text-xs">Ended</div>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-stone-500 font-semibold text-sm" x-text="'₦' + sale.salePrice.toLocaleString()"></span>
+                    <div class="text-xs text-stone-400 line-through" x-text="'₦' + sale.originalPrice.toLocaleString()"></div>
+                  </div>
+                  <button @click="askDelete('Remove this expired sale?', () => deleteFlashSale(sale.id))"
+                          class="p-2 rounded-xl hover:bg-red-50 text-stone-300 hover:text-red-400 transition-colors">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </template>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================================
+             COMBO DEALS PAGE
+             ============================================================ -->
+        <div x-show="activePage === 'combos'" class="p-6 space-y-5" style="display:none;">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="font-bold text-stone-800">Combo Deals</h2>
+              <p class="text-stone-400 text-sm">Bundle items together for a special price</p>
+            </div>
+            <button @click="openAddComboModal()"
+                    class="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-2xl font-semibold text-sm transition-all shadow-md shadow-orange-100 active:scale-95">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              New Combo
+            </button>
+          </div>
+
+          <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <template x-for="combo in combos" :key="combo.id">
+              <div class="bg-white rounded-3xl border border-stone-100 shadow-sm overflow-hidden card-lift">
+                <div class="relative">
+                  <img :src="combo.image" :alt="combo.name" class="w-full h-44 object-cover" />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                  <div class="absolute bottom-4 left-4">
+                    <span class="bg-orange-500 text-white text-xs font-extrabold px-2.5 py-1 rounded-full">
+                      Save <span x-text="'₦' + (combo.originalPrice - combo.price).toLocaleString()"></span>
+                    </span>
+                  </div>
+                </div>
+                <div class="p-4">
+                  <h3 class="font-bold text-stone-800 mb-2" x-text="combo.name"></h3>
+                  <ul class="space-y-1 mb-4">
+                    <template x-for="item in combo.includes" :key="item">
+                      <li class="text-xs text-stone-500 flex items-center gap-1.5">
+                        <span class="w-1 h-1 rounded-full bg-orange-400 flex-shrink-0"></span>
+                        <span x-text="item"></span>
+                      </li>
+                    </template>
+                  </ul>
+                  <div class="flex items-center justify-between mb-4">
+                    <div>
+                      <span class="font-extrabold text-orange-500 text-lg" x-text="'₦' + combo.price.toLocaleString()"></span>
+                      <span class="text-stone-300 text-sm line-through ml-2" x-text="'₦' + combo.originalPrice.toLocaleString()"></span>
+                    </div>
+                  </div>
+                  <div class="flex gap-2">
+                    <button @click="openEditComboModal(combo)"
+                            class="flex-1 flex items-center justify-center gap-1.5 border border-stone-200 hover:border-orange-300 hover:text-orange-600 text-stone-600 py-2 rounded-xl text-sm font-semibold transition-colors">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i> Edit
+                    </button>
+                    <button @click="askDelete('Delete this combo deal?', () => deleteCombo(combo.id))"
+                            class="p-2 rounded-xl border border-stone-200 hover:border-red-200 hover:text-red-500 text-stone-400 transition-colors">
+                      <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </template>
+            <!-- Empty state -->
+            <div x-show="combos.length === 0" class="col-span-full bg-white rounded-3xl border border-dashed border-stone-200 p-10 text-center">
+              <i data-lucide="package" class="w-10 h-10 text-stone-200 mx-auto mb-3"></i>
+              <p class="text-stone-400 font-medium text-sm">No combo deals yet</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================================
+             ORDERS PAGE
+             ============================================================ -->
+        <div x-show="activePage === 'orders'" class="p-6 space-y-5" style="display:none;">
+          <!-- Status Tabs -->
+          <div class="flex gap-2 flex-wrap">
+            <template x-for="tab in orderTabs" :key="tab.value">
+              <button @click="orderFilter = tab.value"
+                      :class="orderFilter === tab.value
+                        ? 'bg-orange-500 text-white shadow-md shadow-orange-100'
+                        : 'bg-white text-stone-600 border border-stone-200 hover:border-orange-300'"
+                      class="px-4 py-2 rounded-full text-sm font-semibold transition-all">
+                <span x-text="tab.label"></span>
+                <span class="ml-1.5 px-1.5 py-0.5 rounded-full text-xs font-bold"
+                      :class="orderFilter === tab.value ? 'bg-white/20 text-white' : 'bg-stone-100 text-stone-500'"
+                      x-text="orders.filter(o => tab.value === 'all' || o.status === tab.value).length"></span>
+              </button>
+            </template>
+          </div>
+
+          <!-- Orders Table -->
+          <div class="bg-white rounded-3xl border border-stone-100 shadow-sm overflow-hidden">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-stone-100 bg-stone-50">
+                  <th class="px-5 py-3.5 text-left font-semibold text-stone-500 text-xs uppercase tracking-wide">Order</th>
+                  <th class="px-4 py-3.5 text-left font-semibold text-stone-500 text-xs uppercase tracking-wide hidden lg:table-cell">Items</th>
+                  <th class="px-4 py-3.5 text-left font-semibold text-stone-500 text-xs uppercase tracking-wide">Total</th>
+                  <th class="px-4 py-3.5 text-left font-semibold text-stone-500 text-xs uppercase tracking-wide hidden md:table-cell">Payment</th>
+                  <th class="px-4 py-3.5 text-center font-semibold text-stone-500 text-xs uppercase tracking-wide">Status</th>
+                  <th class="px-4 py-3.5 text-right font-semibold text-stone-500 text-xs uppercase tracking-wide">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <template x-for="order in filteredOrders" :key="order.id">
+                  <tr class="border-b border-stone-50 last:border-0 table-row">
+                    <td class="px-5 py-3.5">
+                      <div class="font-bold text-stone-800 font-mono text-xs" x-text="order.id"></div>
+                      <div class="text-stone-600 font-medium text-sm mt-0.5" x-text="order.customer"></div>
+                      <div class="text-stone-400 text-xs" x-text="order.phone"></div>
+                      <div class="text-stone-400 text-xs mt-0.5" x-text="order.time"></div>
+                    </td>
+                    <td class="px-4 py-3.5 hidden lg:table-cell max-w-[200px]">
+                      <div class="text-stone-600 text-xs leading-relaxed" x-text="order.items.join(' · ')"></div>
+                    </td>
+                    <td class="px-4 py-3.5">
+                      <div class="font-bold text-stone-800" x-text="'₦' + order.total.toLocaleString()"></div>
+                      <div class="text-stone-400 text-xs" x-text="order.deliveryType === 'delivery' ? '🛵 Delivery' : '🏪 Pickup'"></div>
+                    </td>
+                    <td class="px-4 py-3.5 hidden md:table-cell">
+                      <span :class="order.paymentMethod === 'transfer' ? 'bg-blue-50 text-blue-600' : 'bg-green-50 text-green-600'"
+                            class="text-xs font-semibold px-2.5 py-1 rounded-full"
+                            x-text="order.paymentMethod === 'transfer' ? 'Transfer' : 'Pay on Delivery'"></span>
+                    </td>
+                    <td class="px-4 py-3.5 text-center">
+                      <span :class="{
+                        'badge-pending':    order.status === 'pending',
+                        'badge-processing': order.status === 'processing',
+                        'badge-dispatched': order.status === 'dispatched',
+                        'badge-delivered':  order.status === 'delivered',
+                        'badge-cancelled':  order.status === 'cancelled'
+                      }" class="text-xs font-bold px-2.5 py-1 rounded-full capitalize" x-text="order.status"></span>
+                    </td>
+                    <td class="px-4 py-3.5">
+                      <div class="flex items-center justify-end gap-1">
+                        <button @click="openOrderDetail(order)"
+                                class="p-2 rounded-xl hover:bg-orange-50 text-stone-400 hover:text-orange-500 transition-colors">
+                          <i data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
+                        <select @change="updateOrderStatus(order.id, $event.target.value)"
+                                class="text-xs border border-stone-200 rounded-xl px-2 py-1.5 outline-none focus:border-orange-400 bg-white text-stone-600 transition-all cursor-pointer">
+                          <option value="">Update</option>
+                          <option value="pending">Pending</option>
+                          <option value="processing">Processing</option>
+                          <option value="dispatched">Dispatched</option>
+                          <option value="delivered">Delivered</option>
+                          <option value="cancelled">Cancelled</option>
+                        </select>
+                      </div>
+                    </td>
+                  </tr>
+                </template>
+                <tr x-show="filteredOrders.length === 0">
+                  <td colspan="6" class="px-6 py-12 text-center text-stone-400">No orders in this category.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ============================================================
+             SETTINGS PAGE
+             ============================================================ -->
+        <div x-show="activePage === 'settings'" class="p-6 max-w-2xl" style="display:none;">
+          <div class="space-y-5">
+            <!-- Store Info -->
+            <div class="bg-white rounded-3xl border border-stone-100 shadow-sm p-6">
+              <h2 class="font-bold text-stone-800 mb-5 flex items-center gap-2">
+                <i data-lucide="store" class="w-5 h-5 text-orange-500"></i>
+                Store Information
+              </h2>
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-semibold text-stone-700 mb-1.5">Kitchen Name</label>
+                  <input type="text" value="Neyo's Kitchen" class="w-full border border-stone-200 rounded-2xl px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all" />
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-semibold text-stone-700 mb-1.5">Phone</label>
+                    <input type="tel" value="+234 800 000 0000" class="w-full border border-stone-200 rounded-2xl px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-stone-700 mb-1.5">Email</label>
+                    <input type="email" value="hello@neyoskitchen.com" class="w-full border border-stone-200 rounded-2xl px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all" />
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-stone-700 mb-1.5">Address</label>
+                  <input type="text" value="123 Kitchen Street, Lagos, Nigeria" class="w-full border border-stone-200 rounded-2xl px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment -->
+            <div class="bg-white rounded-3xl border border-stone-100 shadow-sm p-6">
+              <h2 class="font-bold text-stone-800 mb-5 flex items-center gap-2">
+                <i data-lucide="credit-card" class="w-5 h-5 text-orange-500"></i>
+                Payment Details
+              </h2>
+              <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-semibold text-stone-700 mb-1.5">Bank Name</label>
+                    <input type="text" value="First Bank of Nigeria" class="w-full border border-stone-200 rounded-2xl px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-stone-700 mb-1.5">Account Number</label>
+                    <input type="text" value="1234567890" class="w-full border border-stone-200 rounded-2xl px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all" />
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-stone-700 mb-1.5">Account Name</label>
+                  <input type="text" value="Neyo's Kitchen" class="w-full border border-stone-200 rounded-2xl px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Delivery -->
+            <div class="bg-white rounded-3xl border border-stone-100 shadow-sm p-6">
+              <h2 class="font-bold text-stone-800 mb-5 flex items-center gap-2">
+                <i data-lucide="bike" class="w-5 h-5 text-orange-500"></i>
+                Delivery Settings
+              </h2>
+              <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-semibold text-stone-700 mb-1.5">Delivery Fee (₦)</label>
+                    <input type="number" value="500" class="w-full border border-stone-200 rounded-2xl px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-stone-700 mb-1.5">Delivery Radius (km)</label>
+                    <input type="number" value="10" class="w-full border border-stone-200 rounded-2xl px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all" />
+                  </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-semibold text-stone-700 mb-1.5">Opening Time</label>
+                    <input type="time" value="07:00" class="w-full border border-stone-200 rounded-2xl px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-stone-700 mb-1.5">Closing Time</label>
+                    <input type="time" value="21:00" class="w-full border border-stone-200 rounded-2xl px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button @click="showToast('Settings saved successfully!')"
+                    class="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3.5 rounded-2xl font-bold text-sm transition-all active:scale-95 shadow-md shadow-orange-100">
+              Save Changes
+            </button>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ================================================================
+       ADD / EDIT MENU ITEM MODAL
+       ================================================================ -->
+  <div x-show="itemModal.open"
+       x-transition:enter="transition ease-out duration-200"
+       x-transition:enter-start="opacity-0"
+       x-transition:enter-end="opacity-100"
+       x-transition:leave="transition ease-in duration-150"
+       class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+       style="display:none;">
+    <div @click.stop
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         class="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden">
+
+      <div class="flex items-center justify-between px-6 py-5 border-b border-stone-100">
+        <h2 class="font-display font-bold text-xl text-stone-900" x-text="itemModal.isEdit ? 'Edit Menu Item' : 'Add New Item'"></h2>
+        <button @click="itemModal.open = false" class="p-2 rounded-xl hover:bg-stone-100 transition-colors">
+          <i data-lucide="x" class="w-5 h-5 text-stone-500"></i>
+        </button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+        <!-- Image Upload -->
+        <div>
+          <label class="block text-sm font-semibold text-stone-700 mb-2">Food Image</label>
+          <!-- Preview -->
+          <div x-show="itemModal.form.image" class="mb-3">
+            <img :src="itemModal.form.image" alt="Preview" class="img-preview border border-stone-200" />
+          </div>
+          <!-- Upload area -->
+          <div class="upload-area" @click="$refs.imageInput.click()">
+            <i data-lucide="image-plus" class="w-8 h-8 text-stone-300 mx-auto mb-2"></i>
+            <p class="text-stone-400 text-sm font-medium">Click to upload image</p>
+            <p class="text-stone-300 text-xs mt-1">JPG, PNG up to 5MB</p>
+          </div>
+          <input x-ref="imageInput" type="file" accept="image/*" class="sr-only"
+                 @change="handleImageUpload($event)" />
+          <div class="mt-2">
+            <p class="text-xs text-stone-400 mb-1">Or paste image URL:</p>
+            <input x-model="itemModal.form.image" type="url" placeholder="https://..."
+                   class="w-full border border-stone-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-orange-400 transition-all" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="col-span-2">
+            <label class="block text-sm font-semibold text-stone-700 mb-1.5">Item Name <span class="text-red-400">*</span></label>
+            <input x-model="itemModal.form.name" type="text" placeholder="e.g. Jollof Rice"
+                   class="w-full border border-stone-200 rounded-2xl px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all" />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-stone-700 mb-1.5">Category <span class="text-red-400">*</span></label>
+            <select x-model="itemModal.form.category"
+                    class="w-full border border-stone-200 rounded-2xl px-4 py-3 text-sm outline-none focus:border-orange-400 bg-white transition-all">
+              <option value="">Select...</option>
+              <option value="rice">Rice Dishes</option>
+              <option value="soups">Soups & Stews</option>
+              <option value="grills">Grills & Meats</option>
+              <option value="snacks">Snacks</option>
+              <option value="drinks">Drinks</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-stone-700 mb-1.5">Price (₦) <span class="text-red-400">*</span></label>
+            <input x-model.number="itemModal.form.price" type="number" placeholder="e.g. 1500" min="0"
+                   class="w-full border border-stone-200 rounded-2xl px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all" />
+          </div>
+          <div class="col-span-2">
+            <label class="block text-sm font-semibold text-stone-700 mb-1.5">Description</label>
+            <textarea x-model="itemModal.form.description" rows="2" placeholder="Brief description of the dish..."
+                      class="w-full border border-stone-200 rounded-2xl px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all resize-none"></textarea>
+          </div>
+        </div>
+
+        <!-- Available Toggle -->
+        <div class="flex items-center justify-between bg-stone-50 rounded-2xl px-4 py-3">
+          <div>
+            <div class="font-semibold text-stone-700 text-sm">Available for Order</div>
+            <div class="text-stone-400 text-xs">Toggle to show/hide this item from the menu</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" x-model="itemModal.form.available" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="border-t border-stone-100 px-6 py-4 flex gap-3">
+        <button @click="itemModal.open = false" class="flex-1 border-2 border-stone-200 hover:bg-stone-50 text-stone-700 py-3 rounded-2xl font-semibold text-sm transition-colors">Cancel</button>
+        <button @click="saveMenuItem()"
+                class="flex-1 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white py-3 rounded-2xl font-bold text-sm transition-all active:scale-95"
+                x-text="itemModal.isEdit ? 'Save Changes' : 'Add Item'"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================
+       ADD FLASH SALE MODAL
+       ================================================================ -->
+  <div x-show="flashModal.open"
+       x-transition:enter="transition ease-out duration-200"
+       x-transition:enter-start="opacity-0"
+       x-transition:enter-end="opacity-100"
+       x-transition:leave="transition ease-in duration-150"
+       class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+       style="display:none;">
+    <div @click.stop
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         class="bg-white rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden">
+
+      <div class="flex items-center justify-between px-6 py-5 border-b border-stone-100">
+        <h2 class="font-display font-bold text-xl text-stone-900">New Flash Sale</h2>
+        <button @click="flashModal.open = false" class="p-2 rounded-xl hover:bg-stone-100 transition-colors">
+          <i data-lucide="x" class="w-5 h-5 text-stone-500"></i>
+        </button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+        <div>
+          <label class="block text-sm font-semibold text-stone-700 mb-1.5">Select Menu Item <span class="text-red-400">*</span></label>
+          <select x-model="flashModal.form.itemId" @change="onFlashItemSelect()"
+                  class="w-full border border-stone-200 rounded-2xl px-4 py-3 text-sm outline-none focus:border-orange-400 bg-white transition-all">
+            <option value="">Choose an item...</option>
+            <template x-for="item in menuItems" :key="item.id">
+              <option :value="item.id" x-text="`${item.name} (₦${item.price.toLocaleString()})`"></option>
+            </template>
+          </select>
+        </div>
+
+        <!-- Original price display -->
+        <div x-show="flashModal.form.originalPrice > 0" class="bg-stone-50 rounded-2xl px-4 py-3 flex justify-between text-sm">
+          <span class="text-stone-500">Original Price</span>
+          <span class="font-bold text-stone-800" x-text="'₦' + flashModal.form.originalPrice.toLocaleString()"></span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-semibold text-stone-700 mb-1.5">Discount % <span class="text-red-400">*</span></label>
+            <input x-model.number="flashModal.form.discount" @input="calcSalePrice()" type="number" placeholder="e.g. 25" min="1" max="90"
+                   class="w-full border border-stone-200 rounded-2xl px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all" />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-stone-700 mb-1.5">Sale Price (₦)</label>
+            <input x-model.number="flashModal.form.salePrice" type="number" placeholder="Auto-calculated" min="0"
+                   class="w-full border border-stone-200 rounded-2xl px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all bg-orange-50 font-bold text-orange-600" readonly />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-stone-700 mb-1.5">Sale Description</label>
+          <input x-model="flashModal.form.description" type="text" placeholder="e.g. Jumbo portion at a special price"
+                 class="w-full border border-stone-200 rounded-2xl px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-semibold text-stone-700 mb-1.5">Start Date & Time</label>
+            <input x-model="flashModal.form.startTime" type="datetime-local"
+                   class="w-full border border-stone-200 rounded-2xl px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all" />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-stone-700 mb-1.5">End Date & Time <span class="text-red-400">*</span></label>
+            <input x-model="flashModal.form.endTime" type="datetime-local"
+                   class="w-full border border-stone-200 rounded-2xl px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all" />
+          </div>
+        </div>
+
+        <!-- Preview -->
+        <div x-show="flashModal.form.salePrice > 0" class="bg-gradient-to-r from-red-50 to-orange-50 border border-orange-200 rounded-2xl p-4">
+          <div class="text-xs font-bold text-stone-500 uppercase tracking-wide mb-2">Preview on site</div>
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+              <i data-lucide="tag" class="w-5 h-5 text-orange-500"></i>
+            </div>
+            <div>
+              <div class="font-semibold text-stone-800 text-sm" x-text="flashModal.form.name || 'Selected Item'"></div>
+              <div class="flex items-center gap-2 mt-0.5">
+                <span class="text-orange-500 font-bold" x-text="'₦' + (flashModal.form.salePrice || 0).toLocaleString()"></span>
+                <span class="text-stone-300 text-xs line-through" x-text="'₦' + (flashModal.form.originalPrice || 0).toLocaleString()"></span>
+                <span class="bg-red-500 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-full" x-text="`-${flashModal.form.discount}%`"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="border-t border-stone-100 px-6 py-4 flex gap-3">
+        <button @click="flashModal.open = false" class="flex-1 border-2 border-stone-200 hover:bg-stone-50 text-stone-700 py-3 rounded-2xl font-semibold text-sm transition-colors">Cancel</button>
+        <button @click="saveFlashSale()"
+                class="flex-1 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white py-3 rounded-2xl font-bold text-sm transition-all active:scale-95 flex items-center justify-center gap-2">
+          <i data-lucide="zap" class="w-4 h-4"></i>
+          Launch Sale
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================
+       ADD / EDIT COMBO MODAL
+       ================================================================ -->
+  <div x-show="comboModal.open"
+       x-transition:enter="transition ease-out duration-200"
+       x-transition:enter-start="opacity-0"
+       x-transition:enter-end="opacity-100"
+       x-transition:leave="transition ease-in duration-150"
+       class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+       style="display:none;">
+    <div @click.stop
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         class="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden">
+
+      <div class="flex items-center justify-between px-6 py-5 border-b border-stone-100">
+        <h2 class="font-display font-bold text-xl text-stone-900" x-text="comboModal.isEdit ? 'Edit Combo' : 'New Combo Deal'"></h2>
+        <button @click="comboModal.open = false" class="p-2 rounded-xl hover:bg-stone-100 transition-colors">
+          <i data-lucide="x" class="w-5 h-5 text-stone-500"></i>
+        </button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+        <div>
+          <label class="block text-sm font-semibold text-stone-700 mb-1.5">Combo Name <span class="text-red-400">*</span></label>
+          <input x-model="comboModal.form.name" type="text" placeholder="e.g. Family Feast"
+                 class="w-full border border-stone-200 rounded-2xl px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all" />
+        </div>
+
+        <!-- Image URL -->
+        <div>
+          <label class="block text-sm font-semibold text-stone-700 mb-1.5">Combo Image URL</label>
+          <input x-model="comboModal.form.image" type="url" placeholder="https://..."
+                 class="w-full border border-stone-200 rounded-2xl px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all" />
+        </div>
+
+        <!-- Items included -->
+        <div>
+          <label class="block text-sm font-semibold text-stone-700 mb-2">Items Included</label>
+          <div class="space-y-2">
+            <template x-for="(line, idx) in comboModal.form.includes" :key="idx">
+              <div class="flex gap-2">
+                <input :value="line" @input="comboModal.form.includes[idx] = $event.target.value"
+                       type="text" placeholder="e.g. Jollof Rice × 2"
+                       class="flex-1 border border-stone-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-orange-400 transition-all" />
+                <button @click="comboModal.form.includes.splice(idx,1)"
+                        class="p-2.5 rounded-xl border border-stone-200 hover:border-red-200 hover:text-red-400 text-stone-400 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+            </template>
+            <button @click="comboModal.form.includes.push('')"
+                    class="flex items-center gap-2 text-orange-500 hover:text-orange-600 text-sm font-semibold transition-colors px-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add Item Line
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-semibold text-stone-700 mb-1.5">Bundle Price (₦) <span class="text-red-400">*</span></label>
+            <input x-model.number="comboModal.form.price" type="number" placeholder="e.g. 9500" min="0"
+                   class="w-full border border-stone-200 rounded-2xl px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all" />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-stone-700 mb-1.5">Original Price (₦)</label>
+            <input x-model.number="comboModal.form.originalPrice" type="number" placeholder="e.g. 12400" min="0"
+                   class="w-full border border-stone-200 rounded-2xl px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all" />
+          </div>
+        </div>
+
+        <!-- Savings preview -->
+        <div x-show="comboModal.form.originalPrice > comboModal.form.price && comboModal.form.price > 0"
+             class="bg-green-50 border border-green-200 rounded-2xl px-4 py-3 flex items-center gap-3">
+          <i data-lucide="piggy-bank" class="w-5 h-5 text-green-500 flex-shrink-0"></i>
+          <div class="text-sm">
+            <span class="text-stone-500">Customer saves </span>
+            <span class="font-bold text-green-600" x-text="'₦' + (comboModal.form.originalPrice - comboModal.form.price).toLocaleString()"></span>
+            <span class="text-stone-500"> on this combo</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="border-t border-stone-100 px-6 py-4 flex gap-3">
+        <button @click="comboModal.open = false" class="flex-1 border-2 border-stone-200 hover:bg-stone-50 text-stone-700 py-3 rounded-2xl font-semibold text-sm transition-colors">Cancel</button>
+        <button @click="saveCombo()"
+                class="flex-1 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white py-3 rounded-2xl font-bold text-sm transition-all active:scale-95"
+                x-text="comboModal.isEdit ? 'Save Changes' : 'Create Combo'"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================
+       ORDER DETAIL MODAL
+       ================================================================ -->
+  <div x-show="orderDetailModal.open"
+       x-transition:enter="transition ease-out duration-200"
+       x-transition:enter-start="opacity-0"
+       x-transition:enter-end="opacity-100"
+       x-transition:leave="transition ease-in duration-150"
+       class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+       style="display:none;">
+    <div @click.stop
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         class="bg-white rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden">
+
+      <div class="flex items-center justify-between px-6 py-5 border-b border-stone-100">
+        <div>
+          <h2 class="font-display font-bold text-xl text-stone-900">Order Details</h2>
+          <span class="font-mono text-xs font-bold text-orange-500" x-text="orderDetailModal.order?.id"></span>
+        </div>
+        <button @click="orderDetailModal.open = false" class="p-2 rounded-xl hover:bg-stone-100 transition-colors">
+          <i data-lucide="x" class="w-5 h-5 text-stone-500"></i>
+        </button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto px-6 py-5 space-y-5" x-show="orderDetailModal.order">
+        <template x-if="orderDetailModal.order">
+          <div class="space-y-5">
+            <!-- Customer -->
+            <div class="bg-stone-50 rounded-2xl p-4 space-y-2">
+              <h3 class="text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">Customer</h3>
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center font-bold text-orange-600" x-text="orderDetailModal.order.customer.charAt(0)"></div>
+                <div>
+                  <div class="font-bold text-stone-800" x-text="orderDetailModal.order.customer"></div>
+                  <div class="text-stone-400 text-sm" x-text="orderDetailModal.order.phone"></div>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-y-2 text-sm mt-3">
+                <span class="text-stone-400">Delivery</span>
+                <span class="font-semibold text-stone-700 capitalize" x-text="orderDetailModal.order.deliveryType"></span>
+                <span class="text-stone-400">Payment</span>
+                <span class="font-semibold text-stone-700" x-text="orderDetailModal.order.paymentMethod === 'transfer' ? 'Bank Transfer' : 'Pay on Delivery'"></span>
+                <template x-if="orderDetailModal.order.address">
+                  <span class="text-stone-400">Address</span>
+                </template>
+                <template x-if="orderDetailModal.order.address">
+                  <span class="font-semibold text-stone-700" x-text="orderDetailModal.order.address"></span>
+                </template>
+              </div>
+            </div>
+
+            <!-- Items -->
+            <div>
+              <h3 class="text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">Items Ordered</h3>
+              <div class="space-y-2">
+                <template x-for="item in orderDetailModal.order.items" :key="item">
+                  <div class="flex items-center gap-3 bg-stone-50 rounded-xl px-4 py-2.5">
+                    <div class="w-2 h-2 rounded-full bg-orange-400 flex-shrink-0"></div>
+                    <span class="text-stone-700 text-sm" x-text="item"></span>
+                  </div>
+                </template>
+              </div>
+            </div>
+
+            <!-- Total -->
+            <div class="bg-orange-50 border border-orange-100 rounded-2xl p-4 flex justify-between items-center">
+              <span class="font-semibold text-stone-700">Total Amount</span>
+              <span class="font-extrabold text-orange-600 text-xl" x-text="'₦' + orderDetailModal.order.total.toLocaleString()"></span>
+            </div>
+
+            <!-- Update Status -->
+            <div>
+              <h3 class="text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">Update Order Status</h3>
+              <div class="grid grid-cols-2 gap-2">
+                <template x-for="status in ['pending','processing','dispatched','delivered','cancelled']" :key="status">
+                  <button @click="updateOrderStatus(orderDetailModal.order.id, status); orderDetailModal.order.status = status"
+                          :class="orderDetailModal.order.status === status ? 'ring-2 ring-orange-400 bg-orange-50 text-orange-700 border-orange-300' : 'bg-white text-stone-600 border-stone-200 hover:border-stone-300'"
+                          class="border-2 rounded-xl px-3 py-2.5 text-sm font-semibold capitalize transition-all">
+                    <span x-text="status"></span>
+                  </button>
+                </template>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <div class="border-t border-stone-100 px-6 py-4">
+        <button @click="orderDetailModal.open = false" class="w-full bg-stone-100 hover:bg-stone-200 text-stone-700 py-3 rounded-2xl font-semibold text-sm transition-colors">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================
+       SCRIPTS
+       ================================================================ -->
+  <script>
+    /* --- Lucide re-init on Alpine DOM changes --- */
+    document.addEventListener('alpine:initialized', () => lucide.createIcons());
+    let _lt;
+    new MutationObserver(() => { clearTimeout(_lt); _lt = setTimeout(() => lucide.createIcons(), 60); })
+      .observe(document.body, { subtree: true, childList: true });
+
+    /* ---- Admin Alpine Component ---- */
+    function adminApp() {
+      return {
+        /* UI */
+        activePage:    'dashboard',
+        sidebarOpen:   true,
+        toast:         { show: false, message: '', type: 'success' },
+        confirmDialog: { open: false, message: '', onConfirm: null },
+
+        /* Filters */
+        menuSearch:    '',
+        menuFilterCat: 'all',
+        orderFilter:   'all',
+
+        /* Modals */
+        itemModal: {
+          open: false, isEdit: false,
+          form: { id: null, name: '', category: '', price: 0, description: '', image: '', available: true }
+        },
+        flashModal: {
+          open: false,
+          form: { itemId: '', name: '', originalPrice: 0, salePrice: 0, discount: 0, description: '', startTime: '', endTime: '', image: '' }
+        },
+        comboModal: {
+          open: false, isEdit: false,
+          form: { id: null, name: '', image: '', includes: [''], price: 0, originalPrice: 0 }
+        },
+        orderDetailModal: { open: false, order: null },
+
+        /* ---- Data ---- */
+        menuItems: [
+          { id:1,  name:'Jollof Rice',         category:'rice',   price:1500, image:'https://placehold.co/400x300/f97316/ffffff?text=Jollof+Rice',      description:'Our legendary smoky party jollof, cooked over an open flame.', available:true  },
+          { id:2,  name:'Fried Rice',           category:'rice',   price:1500, image:'https://placehold.co/400x300/22c55e/ffffff?text=Fried+Rice',       description:'Golden stir-fried rice tossed with mixed vegetables.',          available:true  },
+          { id:3,  name:'White Rice & Stew',    category:'rice',   price:1200, image:'https://placehold.co/400x300/ef4444/ffffff?text=Rice+%26+Stew',    description:'Fluffy steamed rice paired with a rich tomato beef stew.',      available:true  },
+          { id:4,  name:'Ofada Rice & Ayamase', category:'rice',   price:2000, image:'https://placehold.co/400x300/166534/ffffff?text=Ofada+Rice',       description:'Local ofada rice with the iconic green pepper ayamase stew.',  available:true  },
+          { id:5,  name:'Egusi Soup',           category:'soups',  price:1800, image:'https://placehold.co/400x300/ca8a04/ffffff?text=Egusi+Soup',      description:'Rich ground melon seed soup with assorted meats and fish.',    available:true  },
+          { id:6,  name:'Banga Soup',           category:'soups',  price:2000, image:'https://placehold.co/400x300/b45309/ffffff?text=Banga+Soup',      description:'Delta-style palm fruit soup — deeply aromatic.',               available:true  },
+          { id:7,  name:'Ogbono Soup',          category:'soups',  price:1800, image:'https://placehold.co/400x300/92400e/ffffff?text=Ogbono+Soup',     description:'Draw soup from African wild mango seeds.',                    available:true  },
+          { id:8,  name:'Ofe Onugbu',           category:'soups',  price:2000, image:'https://placehold.co/400x300/14532d/ffffff?text=Bitter+Leaf',     description:'Igbo-style bitter leaf soup with assorted proteins.',          available:false },
+          { id:9,  name:'Peppered Chicken',     category:'grills', price:2500, image:'https://placehold.co/400x300/dc2626/ffffff?text=Peppered+Chicken',description:'Juicy chicken pieces in spicy pepper sauce.',                 available:true  },
+          { id:10, name:'Grilled Catfish',      category:'grills', price:3500, image:'https://placehold.co/400x300/1d4ed8/ffffff?text=Grilled+Catfish', description:'Whole catfish marinated and grilled to smoky perfection.',    available:true  },
+          { id:11, name:'Suya',                 category:'grills', price:1500, image:'https://placehold.co/400x300/d97706/ffffff?text=Suya',            description:'Northern-style spiced beef skewers with onions & tomato.',    available:true  },
+          { id:12, name:'Asun',                 category:'grills', price:2000, image:'https://placehold.co/400x300/7f1d1d/ffffff?text=Asun',            description:'Smoky, fiery peppered goat meat.',                            available:true  },
+          { id:13, name:'Puff Puff',            category:'snacks', price:500,  image:'https://placehold.co/400x300/f59e0b/ffffff?text=Puff+Puff',       description:'Soft, fluffy deep-fried dough balls.',                        available:true  },
+          { id:14, name:'Meat Pie',             category:'snacks', price:600,  image:'https://placehold.co/400x300/a16207/ffffff?text=Meat+Pie',        description:'Flaky pastry filled with seasoned minced beef.',               available:true  },
+          { id:15, name:'Spring Rolls',         category:'snacks', price:800,  image:'https://placehold.co/400x300/65a30d/ffffff?text=Spring+Rolls',    description:'Crispy golden rolls with spiced vegetables.',                 available:true  },
+          { id:16, name:'Chapman',              category:'drinks', price:800,  image:'https://placehold.co/400x300/be185d/ffffff?text=Chapman',         description:"Nigeria's favourite cocktail mix.",                            available:true  },
+          { id:17, name:'Zobo Drink',           category:'drinks', price:600,  image:'https://placehold.co/400x300/9f1239/ffffff?text=Zobo+Drink',      description:'Hibiscus flower drink with ginger and pineapple.',            available:true  },
+          { id:18, name:'Kunu Aya',             category:'drinks', price:600,  image:'https://placehold.co/400x300/78350f/ffffff?text=Kunu+Aya',        description:'Creamy tiger nut milk.',                                       available:true  },
+        ],
+
+        flashSales: [
+          { id:101, name:'Jollof Rice Special', description:'Jumbo portion of our legendary jollof', originalPrice:1500, salePrice:1000, discount:33, image:'https://placehold.co/400x300/f97316/ffffff?text=Flash+Sale', endTime: new Date(Date.now()+4*3600000).toISOString(), active:true, countdown:{h:'04',m:'00',s:'00'} },
+          { id:102, name:'Peppered Chicken Deal', description:'2 pieces at a steal', originalPrice:2500, salePrice:1800, discount:28, image:'https://placehold.co/400x300/dc2626/ffffff?text=Hot+Deal', endTime: new Date(Date.now()+6*3600000).toISOString(), active:true, countdown:{h:'06',m:'00',s:'00'} },
+          { id:103, name:'Snack Attack Bundle', description:'Zobo + 5 puff puff', originalPrice:1100, salePrice:750, discount:32, image:'https://placehold.co/400x300/9f1239/ffffff?text=Snack+Deal', endTime: new Date(Date.now()-3600000).toISOString(), active:false, countdown:{h:'00',m:'00',s:'00'} },
+        ],
+
+        combos: [
+          { id:201, name:'Family Feast', includes:['Jollof Rice × 4','Peppered Chicken × 4','Puff Puff (1 bag)','Chapman × 4'], originalPrice:12400, price:9500, image:'https://placehold.co/500x350/f97316/ffffff?text=Family+Feast' },
+          { id:202, name:'Solo Champ Pack', includes:['Fried Rice × 1','Grilled Catfish (half)','Zobo Drink × 1','Spring Roll × 2'], originalPrice:6500, price:5000, image:'https://placehold.co/500x350/22c55e/ffffff?text=Solo+Champ+Pack' },
+          { id:203, name:'Date Night Special', includes:['Ofada Rice × 2','Asun (1 wrap)','Chapman × 2','Spring Rolls × 4'], originalPrice:8200, price:6500, image:'https://placehold.co/500x350/be185d/ffffff?text=Date+Night' },
+        ],
+
+        orders: [
+          { id:'NK-112301', customer:'Emeka Okafor',    phone:'08012345678', items:['Jollof Rice × 2','Peppered Chicken × 1'], total:5500, deliveryType:'delivery', address:'5, Adeniyi Close, Ikeja, Lagos', paymentMethod:'transfer', status:'pending',    time:'2025-01-15 10:23' },
+          { id:'NK-112302', customer:'Amaka Obi',       phone:'07098765432', items:['Family Feast Combo × 1'], total:9500, deliveryType:'delivery', address:'45, Ozumba Mbadiwe, Victoria Island', paymentMethod:'pod',      status:'processing', time:'2025-01-15 11:45' },
+          { id:'NK-112303', customer:'Tunde Adeyemi',   phone:'09011223344', items:['Fried Rice × 1','Grilled Catfish × 1','Chapman × 1'], total:6300, deliveryType:'pickup',   address:'', paymentMethod:'transfer', status:'dispatched', time:'2025-01-15 12:10' },
+          { id:'NK-112304', customer:'Chioma Eze',      phone:'08055667788', items:['Egusi Soup × 2','White Rice × 2'], total:6000, deliveryType:'delivery', address:'12, Bode Thomas, Surulere', paymentMethod:'pod',      status:'delivered',  time:'2025-01-15 08:30' },
+          { id:'NK-112305', customer:'Biodun Fashola',  phone:'07033445566', items:['Suya × 3','Chapman × 2'], total:6100, deliveryType:'delivery', address:'3, Allen Avenue, Ikeja', paymentMethod:'transfer', status:'delivered',  time:'2025-01-15 09:15' },
+          { id:'NK-112306', customer:'Ngozi Kanu',      phone:'08099001122', items:['Asun × 1','Puff Puff × 1 bag'], total:2500, deliveryType:'pickup',   address:'', paymentMethod:'pod',      status:'pending',    time:'2025-01-15 13:05' },
+          { id:'NK-112307', customer:'Chinedu Okonkwo', phone:'07012345678', items:['Solo Champ Pack × 1'], total:5000, deliveryType:'delivery', address:'8, Eric Moore Road, Surulere', paymentMethod:'transfer', status:'cancelled',  time:'2025-01-15 07:55' },
+        ],
+
+        orderTabs: [
+          { value:'all',        label:'All'        },
+          { value:'pending',    label:'Pending'    },
+          { value:'processing', label:'Processing' },
+          { value:'dispatched', label:'Dispatched' },
+          { value:'delivered',  label:'Delivered'  },
+          { value:'cancelled',  label:'Cancelled'  },
+        ],
+
+        /* ---- Computed ---- */
+        get pageTitle() {
+          const titles = { dashboard:'Dashboard', menu:'Menu Items', flash:'Flash Sales', combos:'Combo Deals', orders:'Orders', settings:'Settings' };
+          return titles[this.activePage] || 'Dashboard';
+        },
+        get pageSubtitle() {
+          const subs = {
+            dashboard: 'Welcome back! Here\'s what\'s happening.',
+            menu:      'Manage your food items, prices, and availability.',
+            flash:     'Create time-limited discounts to drive more orders.',
+            combos:    'Bundle items into attractive combo packages.',
+            orders:    'View and manage all customer orders.',
+            settings:  'Configure your store settings.',
+          };
+          return subs[this.activePage] || '';
+        },
+        get pendingOrdersCount() {
+          return this.orders.filter(o => o.status === 'pending').length;
+        },
+        get filteredMenuItems() {
+          return this.menuItems.filter(item => {
+            const matchSearch = !this.menuSearch || item.name.toLowerCase().includes(this.menuSearch.toLowerCase());
+            const matchCat    = this.menuFilterCat === 'all' || item.category === this.menuFilterCat;
+            return matchSearch && matchCat;
+          });
+        },
+        get filteredOrders() {
+          return this.orders.filter(o => this.orderFilter === 'all' || o.status === this.orderFilter);
+        },
+
+        /* ---- Methods ---- */
+        showToast(msg, type = 'success') {
+          this.toast = { show: true, message: msg, type };
+          clearTimeout(this._tt);
+          this._tt = setTimeout(() => { this.toast.show = false; }, 3000);
+        },
+
+        askDelete(message, onConfirm) {
+          this.confirmDialog = { open: true, message, onConfirm };
+        },
+
+        /* -- Menu Item -- */
+        openAddItemModal() {
+          this.itemModal = {
+            open: true, isEdit: false,
+            form: { id: null, name:'', category:'', price:0, description:'', image:'', available:true }
+          };
+        },
+        openEditItemModal(item) {
+          this.itemModal = { open: true, isEdit: true, form: { ...item } };
+        },
+        handleImageUpload(e) {
+          const file = e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (ev) => { this.itemModal.form.image = ev.target.result; };
+          reader.readAsDataURL(file);
+        },
+        saveMenuItem() {
+          const f = this.itemModal.form;
+          if (!f.name.trim() || !f.category || !f.price) { this.showToast('Please fill in all required fields.', 'error'); return; }
+          if (this.itemModal.isEdit) {
+            const idx = this.menuItems.findIndex(i => i.id === f.id);
+            if (idx > -1) this.menuItems[idx] = { ...f };
+            this.showToast('Menu item updated!');
+          } else {
+            this.menuItems.push({ ...f, id: Date.now() });
+            this.showToast('Menu item added!');
+          }
+          this.itemModal.open = false;
+        },
+        toggleAvailability(id) {
+          const item = this.menuItems.find(i => i.id === id);
+          if (item) { item.available = !item.available; this.showToast(`${item.name} marked as ${item.available ? 'available' : 'sold out'}.`); }
+        },
+        deleteMenuItem(id) {
+          this.menuItems = this.menuItems.filter(i => i.id !== id);
+          this.showToast('Item deleted.');
+        },
+
+        /* -- Flash Sales -- */
+        openAddFlashModal() {
+          this.flashModal = { open: true, form: { itemId:'', name:'', originalPrice:0, salePrice:0, discount:0, description:'', startTime:'', endTime:'', image:'' } };
+        },
+        onFlashItemSelect() {
+          const item = this.menuItems.find(i => i.id == this.flashModal.form.itemId);
+          if (item) {
+            this.flashModal.form.originalPrice = item.price;
+            this.flashModal.form.name          = item.name;
+            this.flashModal.form.image         = item.image;
+            this.calcSalePrice();
+          }
+        },
+        calcSalePrice() {
+          const f = this.flashModal.form;
+          if (f.originalPrice && f.discount > 0) {
+            f.salePrice = Math.round(f.originalPrice * (1 - f.discount / 100));
+          }
+        },
+        saveFlashSale() {
+          const f = this.flashModal.form;
+          if (!f.itemId || !f.discount || !f.endTime) { this.showToast('Please fill in all required fields.', 'error'); return; }
+          if (new Date(f.endTime) <= new Date()) { this.showToast('End time must be in the future.', 'error'); return; }
+          this.flashSales.push({
+            id:            Date.now(),
+            name:          f.name,
+            description:   f.description || `${f.discount}% off on ${f.name}`,
+            originalPrice: f.originalPrice,
+            salePrice:     f.salePrice,
+            discount:      f.discount,
+            image:         f.image,
+            endTime:       f.endTime,
+            active:        true,
+            countdown:     { h:'00', m:'00', s:'00' }
+          });
+          this.flashModal.open = false;
+          this.showToast('Flash sale launched!');
+        },
+        endFlashSale(id) {
+          const s = this.flashSales.find(s => s.id === id);
+          if (s) { s.active = false; this.showToast('Flash sale ended.'); }
+        },
+        deleteFlashSale(id) {
+          this.flashSales = this.flashSales.filter(s => s.id !== id);
+          this.showToast('Flash sale removed.');
+        },
+
+        /* -- Combos -- */
+        openAddComboModal() {
+          this.comboModal = { open:true, isEdit:false, form:{ id:null, name:'', image:'', includes:[''], price:0, originalPrice:0 } };
+        },
+        openEditComboModal(combo) {
+          this.comboModal = { open:true, isEdit:true, form:{ ...combo, includes:[...combo.includes] } };
+        },
+        saveCombo() {
+          const f = this.comboModal.form;
+          if (!f.name.trim() || !f.price) { this.showToast('Please fill in the combo name and price.', 'error'); return; }
+          f.includes = f.includes.filter(l => l.trim());
+          if (this.comboModal.isEdit) {
+            const idx = this.combos.findIndex(c => c.id === f.id);
+            if (idx > -1) this.combos[idx] = { ...f };
+            this.showToast('Combo updated!');
+          } else {
+            this.combos.push({ ...f, id: Date.now() });
+            this.showToast('Combo deal created!');
+          }
+          this.comboModal.open = false;
+        },
+        deleteCombo(id) {
+          this.combos = this.combos.filter(c => c.id !== id);
+          this.showToast('Combo deleted.');
+        },
+
+        /* -- Orders -- */
+        openOrderDetail(order) {
+          this.orderDetailModal = { open: true, order: { ...order } };
+        },
+        updateOrderStatus(id, status) {
+          if (!status) return;
+          const order = this.orders.find(o => o.id === id);
+          if (order) { order.status = status; this.showToast(`Order ${id} marked as ${status}.`); }
+        },
+
+        /* -- Countdown -- */
+        startCountdowns() {
+          setInterval(() => {
+            this.flashSales.forEach(sale => {
+              const diff = new Date(sale.endTime).getTime() - Date.now();
+              if (diff <= 0) { sale.active = false; sale.countdown = { h:'00', m:'00', s:'00' }; }
+              else {
+                sale.countdown = {
+                  h: String(Math.floor(diff / 3600000)).padStart(2,'0'),
+                  m: String(Math.floor((diff % 3600000) / 60000)).padStart(2,'0'),
+                  s: String(Math.floor((diff % 60000) / 1000)).padStart(2,'0'),
+                };
+              }
+            });
+          }, 1000);
+        },
+
+        init() { this.startCountdowns(); }
+      };
+    }
+  </script>
+</body>
+</html>

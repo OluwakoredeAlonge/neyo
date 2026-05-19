@@ -1,12 +1,12 @@
 /* ============================================================
-   Neyo's Kitchen — Custom Styles
+   Clara's Bites and Treats — Custom Styles
    ============================================================ */
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: #f5f5f4; }
 ::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 999px; }
-::-webkit-scrollbar-thumb:hover { background: #f97316; }
+::-webkit-scrollbar-thumb:hover { background: #c94f78; }
 
 /* Smooth scroll */
 html { scroll-behavior: smooth; }
@@ -31,8 +31,8 @@ body { font-family: 'DM Sans', system-ui, sans-serif; }
   to   { opacity: 1; }
 }
 @keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.4); }
-  50%       { box-shadow: 0 0 0 12px rgba(249, 115, 22, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(201, 79, 120, 0.4); }
+  50%       { box-shadow: 0 0 0 12px rgba(201, 79, 120, 0); }
 }
 @keyframes ticker {
   0%   { transform: translateX(0); }
@@ -59,15 +59,15 @@ body { font-family: 'DM Sans', system-ui, sans-serif; }
 
 /* ---- Hero dot pattern ---- */
 .hero-dots {
-  background-image: radial-gradient(rgba(249,115,22,.35) 1px, transparent 1px);
+  background-image: radial-gradient(rgba(201,79,120,.25) 1px, transparent 1px);
   background-size: 28px 28px;
 }
 
 /* ---- Category pill active ---- */
 .cat-pill-active {
-  background: #f97316;
+  background: #c94f78;
   color: #fff;
-  box-shadow: 0 4px 14px rgba(249,115,22,.35);
+  box-shadow: 0 4px 14px rgba(201,79,120,.35);
 }
 
 /* ---- Card hover lift ---- */
@@ -98,7 +98,7 @@ body { font-family: 'DM Sans', system-ui, sans-serif; }
   transition: transform .25s;
   box-shadow: 0 1px 3px rgba(0,0,0,.2);
 }
-.toggle-switch input:checked + .toggle-slider { background: #f97316; }
+.toggle-switch input:checked + .toggle-slider { background: #c94f78; }
 .toggle-switch input:checked + .toggle-slider::before { transform: translateX(18px); }
 
 /* ---- Status badges ---- */
@@ -117,8 +117,8 @@ body { font-family: 'DM Sans', system-ui, sans-serif; }
   transition: background .18s, color .18s;
   white-space: nowrap;
 }
-.nav-item:hover   { background: #fff7ed; color: #f97316; }
-.nav-item.active  { background: #f97316; color: #fff; }
+.nav-item:hover   { background: #fef2f6; color: #c94f78; }
+.nav-item.active  { background: #c94f78; color: #fff; }
 .nav-item.active svg { stroke: #fff; }
 
 /* ---- Upload area ---- */
@@ -130,11 +130,11 @@ body { font-family: 'DM Sans', system-ui, sans-serif; }
   cursor: pointer;
   transition: border-color .2s, background .2s;
 }
-.upload-area:hover { border-color: #f97316; background: #fff7ed; }
+.upload-area:hover { border-color: #c94f78; background: #fef2f6; }
 
 /* ---- Table row hover ---- */
 .table-row { transition: background .15s; }
-.table-row:hover { background: #fff7ed; }
+.table-row:hover { background: #fef2f6; }
 
 /* ---- Skeleton loader ---- */
 .skeleton {

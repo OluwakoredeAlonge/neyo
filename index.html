@@ -100,6 +100,9 @@
           </a>
           <a href="#combos"       class="text-sm font-medium text-stone-500 hover:text-blush-500 transition-colors">Combos</a>
           <a href="#how-it-works" class="text-sm font-medium text-stone-500 hover:text-blush-500 transition-colors">How It Works</a>
+          <a href="#reviews"      class="text-sm font-medium text-stone-500 hover:text-blush-500 transition-colors flex items-center gap-1.5">
+            <i data-lucide="star" class="w-3.5 h-3.5 text-gold-400"></i> Reviews
+          </a>
           <a href="#contact"      class="text-sm font-medium text-stone-500 hover:text-blush-500 transition-colors">Contact</a>
         </div>
 
@@ -134,6 +137,7 @@
       <a @click="mobileMenuOpen=false" href="#flash-sales"  class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-stone-700 hover:bg-blush-50 hover:text-blush-600 text-sm font-medium transition-colors"><i data-lucide="zap" class="w-4 h-4"></i> Flash Sales</a>
       <a @click="mobileMenuOpen=false" href="#combos"       class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-stone-700 hover:bg-blush-50 hover:text-blush-600 text-sm font-medium transition-colors"><i data-lucide="package" class="w-4 h-4"></i> Combos</a>
       <a @click="mobileMenuOpen=false" href="#how-it-works" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-stone-700 hover:bg-blush-50 hover:text-blush-600 text-sm font-medium transition-colors"><i data-lucide="help-circle" class="w-4 h-4"></i> How It Works</a>
+      <a @click="mobileMenuOpen=false" href="#reviews"      class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-stone-700 hover:bg-blush-50 hover:text-blush-600 text-sm font-medium transition-colors"><i data-lucide="star" class="w-4 h-4"></i> Reviews</a>
       <a @click="mobileMenuOpen=false" href="#contact"      class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-stone-700 hover:bg-blush-50 hover:text-blush-600 text-sm font-medium transition-colors"><i data-lucide="phone" class="w-4 h-4"></i> Contact</a>
     </div>
   </nav>
@@ -155,18 +159,34 @@
         <div>
           <div class="inline-flex items-center gap-2 bg-blush-100 text-blush-600 text-xs font-bold px-4 py-2 rounded-full mb-8 uppercase tracking-wider">
             <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-            Free Delivery on Your First Order
+            Lagos State's Favourite Home Kitchen
           </div>
 
-          <h1 class="font-display text-5xl sm:text-6xl lg:text-7xl text-stone-900 leading-[1.08] mb-6">
-            Handmade with<br/>
-            <span class="text-blush-500 italic">Love,</span> Delivered<br/>
-            with Care
+          <h1 class="font-display text-5xl sm:text-6xl lg:text-7xl text-stone-900 leading-[1.08] mb-5">
+            Welcome to<br/>
+            <span class="text-blush-500 italic">Clara's</span><br/>
+            Kitchen
           </h1>
 
-          <p class="text-stone-500 text-lg leading-relaxed mb-10 max-w-md">
-            From smoky jollof rice to golden grills and indulgent treats — every bite from Clara's kitchen is made fresh and delivered hot to your door.
+          <p class="text-stone-500 text-lg leading-relaxed mb-7 max-w-md">
+            From smoky jollof rice and rich soups to gorgeous pastries and custom cakes — Clara cooks with heart. We also handle <strong class="text-stone-700 font-semibold">event catering</strong>, <strong class="text-stone-700 font-semibold">booking requests</strong> and <strong class="text-stone-700 font-semibold">special occasion treats</strong>, all made fresh right here in Lagos.
           </p>
+
+          <!-- What we offer pills -->
+          <div class="flex flex-wrap gap-2 mb-10">
+            <span class="inline-flex items-center gap-1.5 bg-blush-50 border border-blush-100 text-blush-600 text-xs font-semibold px-3 py-1.5 rounded-full">
+              <i data-lucide="calendar-check" class="w-3.5 h-3.5"></i> Event Booking
+            </span>
+            <span class="inline-flex items-center gap-1.5 bg-gold-50 border border-gold-100 text-gold-600 text-xs font-semibold px-3 py-1.5 rounded-full">
+              <i data-lucide="utensils" class="w-3.5 h-3.5"></i> Catering Requests
+            </span>
+            <span class="inline-flex items-center gap-1.5 bg-blush-50 border border-blush-100 text-blush-600 text-xs font-semibold px-3 py-1.5 rounded-full">
+              <i data-lucide="gift" class="w-3.5 h-3.5"></i> Pastries &amp; Cakes
+            </span>
+            <span class="inline-flex items-center gap-1.5 bg-gold-50 border border-gold-100 text-gold-600 text-xs font-semibold px-3 py-1.5 rounded-full">
+              <i data-lucide="clipboard-list" class="w-3.5 h-3.5"></i> Custom Orders
+            </span>
+          </div>
 
           <div class="flex flex-wrap gap-4">
             <a href="#menu"
@@ -511,6 +531,176 @@
   </section>
 
   <!-- ================================================================
+       CUSTOMER REVIEWS
+       ================================================================ -->
+  <section id="reviews" class="py-16 lg:py-24 bg-cream">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+      <!-- Header -->
+      <div class="text-center mb-14">
+        <div class="inline-flex items-center gap-2 bg-gold-100 text-gold-600 text-xs font-bold px-4 py-2 rounded-full mb-6 uppercase tracking-wider">
+          <i data-lucide="star" class="w-3.5 h-3.5"></i>
+          Customer Love
+        </div>
+        <h2 class="font-display font-bold text-3xl lg:text-4xl text-stone-900 mb-3">What Our Customers Say</h2>
+        <p class="text-stone-400 text-sm">Real words from people who love Clara's kitchen</p>
+      </div>
+
+      <!-- Static reviews grid -->
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-14">
+
+        <!-- Review 1 -->
+        <div class="bg-white rounded-3xl p-6 border border-blush-100 shadow-sm card-lift flex flex-col">
+          <div class="flex items-center gap-0.5 mb-4">
+            <svg class="w-4 h-4 fill-gold-400 text-gold-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 fill-gold-400 text-gold-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 fill-gold-400 text-gold-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 fill-gold-400 text-gold-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 fill-gold-400 text-gold-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <p class="text-stone-500 text-sm leading-relaxed italic flex-1 mb-5">"Clara's jollof rice is absolutely divine! I ordered for my husband's birthday and the whole family couldn't stop raving about it. Delivery was prompt and the food was piping hot. Will definitely order again!"</p>
+          <div class="flex items-center gap-3 pt-4 border-t border-blush-50">
+            <div class="w-10 h-10 rounded-full bg-blush-100 flex items-center justify-center font-bold text-blush-600 text-sm flex-shrink-0">AO</div>
+            <div>
+              <div class="font-semibold text-stone-800 text-sm">Amaka Obi</div>
+              <div class="text-stone-400 text-xs">Lagos Island</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Review 2 -->
+        <div class="bg-white rounded-3xl p-6 border border-blush-100 shadow-sm card-lift flex flex-col">
+          <div class="flex items-center gap-0.5 mb-4">
+            <svg class="w-4 h-4 fill-gold-400 text-gold-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 fill-gold-400 text-gold-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 fill-gold-400 text-gold-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 fill-gold-400 text-gold-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 fill-gold-400 text-gold-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <p class="text-stone-500 text-sm leading-relaxed italic flex-1 mb-5">"I booked Clara for my daughter's naming ceremony — the catering was absolutely flawless! The pastries and small chops were a major hit. Everyone kept asking who made the food. She is incredibly professional!"</p>
+          <div class="flex items-center gap-3 pt-4 border-t border-blush-50">
+            <div class="w-10 h-10 rounded-full bg-gold-100 flex items-center justify-center font-bold text-gold-600 text-sm flex-shrink-0">TF</div>
+            <div>
+              <div class="font-semibold text-stone-800 text-sm">Tunde Fashola</div>
+              <div class="text-stone-400 text-xs">Ikeja, Lagos</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Review 3 -->
+        <div class="bg-white rounded-3xl p-6 border border-blush-100 shadow-sm card-lift flex flex-col">
+          <div class="flex items-center gap-0.5 mb-4">
+            <svg class="w-4 h-4 fill-gold-400 text-gold-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 fill-gold-400 text-gold-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 fill-gold-400 text-gold-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 fill-gold-400 text-gold-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 fill-gold-400 text-gold-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <p class="text-stone-500 text-sm leading-relaxed italic flex-1 mb-5">"The custom cake Clara made for our anniversary was absolutely breathtaking — beautiful to look at and even more delicious to eat. She listened to exactly what I wanted and delivered beyond my expectations!"</p>
+          <div class="flex items-center gap-3 pt-4 border-t border-blush-50">
+            <div class="w-10 h-10 rounded-full bg-blush-100 flex items-center justify-center font-bold text-blush-600 text-sm flex-shrink-0">CE</div>
+            <div>
+              <div class="font-semibold text-stone-800 text-sm">Chioma Eze</div>
+              <div class="text-stone-400 text-xs">Surulere, Lagos</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Leave a review form + CTA -->
+      <div class="grid lg:grid-cols-2 gap-8 items-stretch">
+
+        <!-- Leave a review card -->
+        <div class="bg-white rounded-3xl border border-blush-100 shadow-sm p-8" x-data="{
+          form: { name: '', rating: 5, message: '' },
+          submitted: false,
+          hover: 0,
+          submit() {
+            if (!this.form.name.trim() || !this.form.message.trim()) return;
+            this.submitted = true;
+          }
+        }">
+          <h3 class="font-display font-semibold text-xl text-stone-800 mb-1">Leave a Review</h3>
+          <p class="text-stone-400 text-sm mb-6">Loved your experience? Let others know!</p>
+
+          <!-- Success state -->
+          <div x-show="submitted" class="py-8 text-center animate-fade-in">
+            <div class="w-16 h-16 bg-blush-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c94f78" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <h4 class="font-display font-semibold text-stone-800 text-lg mb-2">Thank you so much! 🎉</h4>
+            <p class="text-stone-400 text-sm">Your kind words mean the world to Clara.</p>
+          </div>
+
+          <!-- Form -->
+          <div x-show="!submitted" class="space-y-4">
+            <!-- Star rating -->
+            <div>
+              <label class="block text-sm font-semibold text-stone-700 mb-2">Your Rating</label>
+              <div class="flex items-center gap-1">
+                <template x-for="n in [1,2,3,4,5]" :key="n">
+                  <button type="button"
+                          @click="form.rating = n"
+                          @mouseenter="hover = n"
+                          @mouseleave="hover = 0"
+                          class="focus:outline-none">
+                    <svg class="w-7 h-7 transition-colors"
+                         :class="(hover || form.rating) >= n ? 'fill-gold-400 text-gold-400' : 'fill-stone-200 text-stone-200'"
+                         viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  </button>
+                </template>
+              </div>
+            </div>
+            <!-- Name -->
+            <div>
+              <label class="block text-sm font-semibold text-stone-700 mb-1.5">Your Name <span class="text-blush-400">*</span></label>
+              <input x-model="form.name" type="text" placeholder="e.g. Amaka Okafor"
+                     class="w-full border border-stone-200 rounded-2xl px-4 py-3 text-sm outline-none focus:border-blush-400 focus:ring-4 focus:ring-blush-50 transition-all" />
+            </div>
+            <!-- Message -->
+            <div>
+              <label class="block text-sm font-semibold text-stone-700 mb-1.5">Your Review <span class="text-blush-400">*</span></label>
+              <textarea x-model="form.message" rows="3" placeholder="Tell us about your experience..."
+                        class="w-full border border-stone-200 rounded-2xl px-4 py-3 text-sm outline-none focus:border-blush-400 focus:ring-4 focus:ring-blush-50 transition-all resize-none"></textarea>
+            </div>
+            <button @click="submit()"
+                    class="w-full bg-blush-500 hover:bg-blush-600 active:bg-blush-700 text-white font-bold py-3 rounded-2xl text-sm transition-all active:scale-95 shadow-md shadow-blush-100">
+              Submit Review
+            </button>
+          </div>
+        </div>
+
+        <!-- Call / Book CTA -->
+        <div class="bg-gradient-to-br from-blush-500 to-blush-700 rounded-3xl p-8 text-white flex flex-col justify-between">
+          <div>
+            <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-6">
+              <i data-lucide="phone-call" class="w-6 h-6 text-white"></i>
+            </div>
+            <h3 class="font-display font-bold text-2xl mb-3">Book a Catering<br/>or Place an Order</h3>
+            <p class="text-blush-100 text-sm leading-relaxed mb-8">
+              Planning an event, birthday, naming ceremony or wedding? Call Clara directly to discuss your catering needs, pastry orders, or any custom request. She'd love to hear from you!
+            </p>
+          </div>
+          <div class="space-y-3">
+            <a href="tel:09131558759"
+               class="flex items-center gap-3 bg-white text-blush-600 font-bold px-5 py-3.5 rounded-2xl transition-all hover:bg-blush-50 active:scale-95 shadow-lg text-sm">
+              <i data-lucide="phone" class="w-4 h-4"></i>
+              Call: 0913 155 8759
+            </a>
+            <a href="https://wa.me/2349131558759"
+               class="flex items-center gap-3 bg-white/15 hover:bg-white/25 text-white font-semibold px-5 py-3.5 rounded-2xl transition-all text-sm">
+              <i data-lucide="message-circle" class="w-4 h-4"></i>
+              WhatsApp Us
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================
        FOOTER
        ================================================================ -->
   <footer id="contact" style="background: #2d1020;" class="text-stone-400">
@@ -527,8 +717,12 @@
               <span class="block text-[10px] font-semibold text-blush-300 uppercase tracking-widest">Homemade with Love</span>
             </div>
           </div>
-          <p class="text-sm leading-relaxed max-w-xs mb-6">
-            Every bite made with the freshest ingredients, seasoned with care and delivered with a smile. This is Clara's promise to you.
+          <p class="text-sm leading-relaxed max-w-xs mb-4">
+            Every bite made with the freshest ingredients, seasoned with care and delivered with a smile. Event catering, pastries, cakes &amp; custom orders — this is Clara's promise to you.
+          </p>
+          <p class="flex items-center gap-2 text-sm text-blush-300 font-semibold mb-6">
+            <i data-lucide="map-pin" class="w-4 h-4 flex-shrink-0"></i>
+            Lagos State, Nigeria
           </p>
           <div class="flex gap-3">
             <a href="#" class="w-9 h-9 bg-white/10 hover:bg-blush-500 rounded-xl flex items-center justify-center transition-colors group">
@@ -551,6 +745,7 @@
             <li><a href="#flash-sales"   class="hover:text-blush-300 transition-colors">Flash Sales</a></li>
             <li><a href="#combos"        class="hover:text-blush-300 transition-colors">Combo Deals</a></li>
             <li><a href="#how-it-works"  class="hover:text-blush-300 transition-colors">How It Works</a></li>
+            <li><a href="#reviews"       class="hover:text-blush-300 transition-colors">Customer Reviews</a></li>
           </ul>
         </div>
 
@@ -558,9 +753,9 @@
         <div>
           <h4 class="font-semibold text-white mb-5 text-sm uppercase tracking-wider">Contact Us</h4>
           <ul class="space-y-3.5 text-sm">
-            <li class="flex items-center gap-3"><i data-lucide="phone"   class="w-4 h-4 text-blush-400 flex-shrink-0"></i><span>+234 800 000 0000</span></li>
+            <li class="flex items-center gap-3"><i data-lucide="phone"   class="w-4 h-4 text-blush-400 flex-shrink-0"></i><a href="tel:09131558759" class="hover:text-blush-300 transition-colors">0913 155 8759</a></li>
             <li class="flex items-center gap-3"><i data-lucide="mail"    class="w-4 h-4 text-blush-400 flex-shrink-0"></i><span>hello@clarasbitesandtreats.com</span></li>
-            <li class="flex items-start gap-3"><i data-lucide="map-pin" class="w-4 h-4 text-blush-400 flex-shrink-0 mt-0.5"></i><span>123 Kitchen Street,<br/>Lagos, Nigeria</span></li>
+            <li class="flex items-start gap-3"><i data-lucide="map-pin" class="w-4 h-4 text-blush-400 flex-shrink-0 mt-0.5"></i><span>Lagos State,<br/>Nigeria</span></li>
           </ul>
         </div>
       </div>
